@@ -38,7 +38,13 @@ import (
 var (
 	FrontierBlockReward    *big.Int = big.NewInt(5e+18) // Block reward in wei for successfully mining a block
 	ByzantiumBlockReward   *big.Int = big.NewInt(3e+18) // Block reward in wei for successfully mining a block upward from Byzantium
-	maxUncles                       = 2                 // Maximum number of uncles allowed in a single block
+	// add by yinsong 2018.05.05
+	ZeroBlockReward   	   *big.Int = big.NewInt(0)     // Block reward in wei for successfully mining a block upward from bitcts
+	// add end
+	// modify by yinsong 2018.05.05
+	//maxUncles                       = 2                 // Maximum number of uncles allowed in a single block
+	maxUncles						= 0
+	// modify end
 	allowedFutureBlockTime          = 15 * time.Second  // Max time from current time allowed for blocks, before they're considered future blocks
 )
 
@@ -295,6 +301,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainReader, time uint64, p
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
 func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Header) *big.Int {
+	// modify by yinsong 2018.05.05
+	/*
 	next := new(big.Int).Add(parent.Number, big1)
 	switch {
 	case config.IsByzantium(next):
@@ -303,7 +311,9 @@ func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Heade
 		return calcDifficultyHomestead(time, parent)
 	default:
 		return calcDifficultyFrontier(time, parent)
-	}
+	}*/
+	return calcDifficultyFrontier(time, parent)
+	// modify end
 }
 
 // Some weird constants to avoid constant memory allocs for them.
@@ -533,6 +543,7 @@ var (
 // included uncles. The coinbase of each uncle block is also rewarded.
 func accumulateRewards(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header) {
 	// Select the correct block reward based on chain progression
+	/* modify by yinsong 2018.05.05, Bitcts miner not have rewards.
 	blockReward := FrontierBlockReward
 	if config.IsByzantium(header.Number) {
 		blockReward = ByzantiumBlockReward
@@ -549,6 +560,9 @@ func accumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 
 		r.Div(blockReward, big32)
 		reward.Add(reward, r)
-	}
+	}*/
+	blockReward := ZeroBlockReward;
+	reward := new(big.Int).Set(blockReward);
+	// modify end
 	state.AddBalance(header.Coinbase, reward)
 }
